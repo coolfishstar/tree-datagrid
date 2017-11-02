@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>treedatagrid2</title>
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-table.css">
+    <link rel="stylesheet" href="css/bootstrap-editable.css">
+    <link rel="stylesheet" href="css/jquery-ui.css">
+    <script src="js/jquery.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/jquery.ui.touch-punch.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-table.js"></script>
+    <script src="js/bootstrap-table-zh-CN.js"></script>
+    <script src="js/extensions/editable/bootstrap-table-editable.js"></script>
+    <script src="js/bootstrap-editable.js"></script>
+    <script src="js/extensions/export/bootstrap-table-export.js"></script>
+    <script src="js/tableExport.js"></script>
+    <script src="js/bootstrap-treeview.js"></script>
+    <script type="text/javascript" src="js/sheetjs.all.min.js"></script>
+    <script type="text/javascript" src="js/excelplus-2.4.1.min.js"></script>
+    <script src="js/esprima.js"></script>
+    <script src="js/data-validator.js"></script>
+    <link href="css/ui.fancytree.css" rel="stylesheet" class="skinswitcher">
+    <script src="js/jquery.fancytree.js"></script>
+    <script src="js/jquery.fancytree.dnd.js"></script>
+    <script src="js/jquery.fancytree.edit.js"></script>
+    <script src="js/jquery.fancytree.glyph.js"></script>
+    <script src="js/jquery.fancytree.table.js"></script>
+    <script src="js/jquery.fancytree.wide.js"></script>
+    <script src="js/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="css/sweetalert.css">
+</head>
+<body>
+<div style="width: 100%" id="all" >
+    <div id="treediv" style="width: 20%;float: left">
+
+        <p id="plainTreeStyles">
+            <b>Add container class:</b><br>
+            <label><input type="checkbox" data-class="fancytree-colorize-selected"> fancytree-colorize-selected</label>
+        </p>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <b>系统管理</b>
+            </div>
+            <div id="tree" class="panel-body fancytree-colorize-hover fancytree-fade-expander">
+            </div>
+            <div class="panel-footer">
+                <button id="btnExpandAll" class="btn btn-xs btn-primary">全部展开</button>
+                <button id="btnCollapseAll" class="btn btn-xs btn-warning">全部折叠</button>
+                <button id="addchild" class="btn btn-xs btn-info">添加子节点</button>
+                <button id="addsiblingfolder" class="btn btn-xs btn-success">添加文件夹</button>
+                <button id="deletenode" class="btn btn-xs btn-danger">删除子节点</button>
+            </div>
+        </div>
+    </div>
+    <div id="tablediv" style="width: 80%;float:right"><table class="table table-striped" id="datagrid" data-url="../tree-datagrid/data/url.json" data-show-export="true"></table></div>
+</div>
+<div id="toolbar" style="display: none">
+    <div class="form-group">
+        <div class="input-group">
+            <label style="font-size: 26px">数据列表</label>
+            <button id="btn_add" style="margin-left: 22px" type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
+            </button>
+            <label  style="font-size: 20px; margin-left: 20px">导入</label>&nbsp&nbsp
+            <input id="file-object" type="file" value="Open an Excel file" style="width: 200px;display: inline-block">
+            <label  style="font-size: 20px">导出</label>&nbsp&nbsp
+            <select style="width: auto;float: right" class="form-control">
+                <option value="basic">基本导出</option>
+                <option value="all">全部导出</option>
+                <option value="selected">选择导出</option>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+    <div id="modalDialog" class="modal-dialog" role="document" style="width:500px">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #428bca;">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title" id="myModalLabel" style="color: #fff">
+                    新增监控信息
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" id="modalform" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="text-align: center">标题</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="title"
+                                   placeholder="请输入标题" onclick="$(this).focus()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="text-align: center">通知</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="memo"
+                                   placeholder="请输入通知类型" onclick="$(this).focus()" onblur="$(this).next('input').focus()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="text-align: center">得分</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="score"
+                                   placeholder="请输入得分" onclick="$(this).focus()" onblur="$(this).next('input').focus()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="text-align: center">项目编号</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="pro_id"
+                                   placeholder="请输入项目编号" onclick="$(this).focus()" onblur="$(this).next('input').focus()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="text-align: center">调查类型</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="typename"
+                                   placeholder="请输入调查类型" onclick="$(this).focus()" onblur="$(this).next('input').focus()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="text-align: center">用户组</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="auser"
+                                   placeholder="请输入用户组" onclick="$(this).focus()" onblur="$(this).next('input').focus()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="text-align: center">选择学校类型</label>
+                        <div class="col-sm-9">
+                            <select id="astep" class="form-control" onclick="$(this).focus()" onblur="$(this).next('input').focus()">
+                                <option>小学</option>
+                                <option>初中</option>
+                                <option>高中</option>
+                                <option>大学</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="text-align: center">英语标题</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="englishtitle"
+                                   placeholder="请输入英语标题" onclick="$(this).focus()" onblur="$(this).next('input').focus()"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-3 control-label" style="text-align: center">选择用户类型</label>
+                        <div class="col-sm-9">
+                            <select id="usertype" class="form-control" onclick="$(this).focus()" onblur="$(this).next('input').focus()">
+                                <option>学生</option>
+                                <option>老师</option>
+                                <option>行政人员</option>
+                                <option>后勤人员</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-default col-sm-offset-1" data-dismiss="modal">关闭
+                        </button>
+                        <button type="button" id="addRecord" class="btn btn-primary col-sm-offset-1">增加</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        //如果是移动端访问则固定modal位置，在PC上则可以调整其大小位置
+        var sUserAgent = navigator.userAgent.toLowerCase();
+        var bIsIpad = sUserAgent.match(/ipad/i) == "ipad";
+        var bIsIphoneOs = sUserAgent.match(/iphone os/i) == "iphone os";
+        var bIsMidp = sUserAgent.match(/midp/i) == "midp";
+        var bIsUc7 = sUserAgent.match(/rv:1.2.3.4/i) == "rv:1.2.3.4";
+        var bIsUc = sUserAgent.match(/ucweb/i) == "ucweb";
+        var bIsAndroid = sUserAgent.match(/android/i) == "android";
+        var bIsCE = sUserAgent.match(/windows ce/i) == "windows ce";
+        var bIsWM = sUserAgent.match(/windows mobile/i) == "windows mobile";
+        if (bIsIpad || bIsIphoneOs || bIsMidp || bIsUc7 || bIsUc || bIsAndroid || bIsCE || bIsWM) {
+            //移动端固定modal位置（能draggable、但是不能resizable）(具体可能js间有冲突?)
+//            $('#myModal .modal-content').resizable({
+//                minHeight: 610,
+//                minWidth: 351
+//            });
+            $('.modal-dialog').draggable();
+            $('#myModal').on('show.bs.modal', function () {
+                $(this).find('.modal-body').css({
+                    'max-height':'100%'
+                });
+            });
+            $("#myModal").css("overflow", "hidden");//禁止模态对话框的半透明背景滚动
+            $("#myModal").on("hide.bs.modal", function () {
+                $('#title').val('');
+                $('#memo').val('');
+                $('#score').val('');
+                $('#pro_id').val('');
+                $('#typename').val('');
+                $('#auser').val('');
+                $('#englishtitle').val('');
+            });
+        } else {
+            //pc端不固定modal位置（可以draggable和resizable）
+            $('#myModal .modal-content').resizable({
+                minHeight: 610,
+                minWidth: 351
+            });
+            $('.modal-dialog').draggable();
+            $('#myModal').on('show.bs.modal', function () {
+                $(this).find('.modal-body').css({
+                    'max-height':'100%'
+                });
+            });
+            $("#myModal").css("overflow", "hidden");//禁止模态对话框的半透明背景滚动
+            $("#myModal").on("hide.bs.modal", function () {
+                $('#title').val('');
+                $('#memo').val('');
+                $('#score').val('');
+                $('#pro_id').val('');
+                $('#typename').val('');
+                $('#auser').val('');
+                $('#englishtitle').val('');
+            });
+        }
+    });
+    $(function () {
+        glyph_opts = {
+            map: {
+                doc: "glyphicon glyphicon-file",
+                docOpen: "glyphicon glyphicon-file",
+                checkbox: "glyphicon glyphicon-unchecked",
+                checkboxSelected: "glyphicon glyphicon-check",
+                checkboxUnknown: "glyphicon glyphicon-share",
+                dragHelper: "glyphicon glyphicon-play",
+                dropMarker: "glyphicon glyphicon-arrow-right",
+                error: "glyphicon glyphicon-warning-sign",
+                expanderClosed: "glyphicon glyphicon-menu-right",
+                expanderLazy: "glyphicon glyphicon-menu-right",  // glyphicon-plus-sign
+                expanderOpen: "glyphicon glyphicon-menu-down",  // glyphicon-collapse-down
+                folder: "glyphicon glyphicon-folder-close",
+                folderOpen: "glyphicon glyphicon-folder-open",
+                loading: "glyphicon glyphicon-refresh glyphicon-spin"
+            }
+        };
+        $(function() {
+            // 初始化 Fancytree
+            $("#tree").fancytree({
+                extensions: ["dnd", "edit", "glyph", "wide"],
+                checkbox: true,
+                dnd: {
+                    focusOnClick: true,
+                    preventVoidMoves: true, // Prevent dropping nodes 'before self', etc.
+                    preventRecursiveMoves: true, // Prevent dropping nodes on own descendants
+                    dragStart: function (node, data) {
+                        return true;
+                    },
+                    dragEnter: function (node, data) {
+                        return true;
+                    },
+                    dragDrop: function(node, data) {
+                        /** This function MUST be defined to enable dropping of items on
+                         *  the tree.
+                         */
+                        //先通过ajax将新的树结构传到后台,然后再更新树结构
+                        var tree = $("#tree").fancytree("getTree");
+                        var d = tree.toDict(true);
+                        console.log(JSON.stringify(d));
+                        data.otherNode.moveTo(node, data.hitMode);
+                    }
+                },
+                edit: {
+                    triggerStart: ["f2", "dblclick", "shift+click", "mac+enter"],
+                    beforeEdit: function(event, data){
+                        // Return false to prevent edit mode
+                    },
+                    edit: function(event, data){
+                        // Editor was opened (available as data.input)
+                    },
+                    beforeClose: function(event, data){
+                        // Return false to prevent cancel/save (data.input is available)
+                        if( data.originalEvent.type === "mousedown" ) {
+
+                        }
+                    },
+                    save: function(event, data){
+                        // Save data.input.val() or return false to keep editor open
+                        // Simulate to start a slow ajax request...
+                        setTimeout(function(){
+                            $(data.node.span).removeClass("pending");
+                            // Let's pretend the server returned a slightly modified
+                            // title:
+                            data.node.setTitle(data.node.title + "!");
+                        }, 2000);
+                        return true;
+                    },
+                    close: function(event, data){
+                        // Editor was removed
+                        if( data.save ) {
+                            $(data.node.span).addClass("pending");
+                        }
+                    }
+                },
+                glyph: glyph_opts,
+                selectMode: 2,
+                source: {url: "data/tree.json", debugDelay: 500},
+                toggleEffect: {effect: "drop", options: {direction: "left"}, duration: 400},
+                wide: {
+                    iconWidth: "1em",     // Adjust this if @fancy-icon-width != "16px"
+                    iconSpacing: "0.5em", // Adjust this if @fancy-icon-spacing != "3px"
+                    levelOfs: "1.5em"     // Adjust this if ul padding != "16px"
+                },
+
+                icon: function (event, data) {
+
+                },
+                lazyLoad: function (event, data) {
+                    data.result = {url: "ajax-sub2.json", debugDelay: 1000};
+                },
+                focus: function (event, data) {
+                    if (data.node.title=="学生管理") {
+                        new inialTable();
+                    }
+                }
+            });
+        });
+        var inialTable = function ($exprotType) {
+            var or = [];
+            $('#datagrid').bootstrapTable({
+                dataType: 'json',
+                columns: [{
+                    checkbox: true
+                },
+                    {
+                        field: 'ID',
+                        title: 'ID',
+                        sortable: true
+                    },
+                    {
+                        field: 'TITLE',
+                        title: '标题',
+                        editable: {
+                            type: 'text',
+                            validate: function (value) {
+                                if ($.trim(value) == '') {
+                                    return '测量值不能为空';
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'MEMO',
+                        title: '通知',
+                        editable: {
+                            type: 'text'
+                        }
+                    }, {
+                        field: 'SCORE',
+                        title: '得分',
+                        editable: {
+                            type: 'text',
+                            validate: function (value) {
+                                if ($.trim(value) == '') {
+                                    return '得分不能为空';
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'PRJ_ID',
+                        title: '项目编号',
+                        editable: {
+                            type: 'text',
+                            validate: function (value) {
+                                if ($.trim(value) == '') {
+                                    return '编号不能为空';
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'TYPENAME',
+                        title: '调查类型',
+                        editable: {
+                            type: 'text',
+                            validate: function (value) {
+                                if ($.trim(value) == '') {
+                                    return '类型不能为空';
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'AUSER',
+                        title: '用户组',
+                        editable: {
+                            type: 'text',
+                            validate: function (value) {
+                                if ($.trim(value) == '') {
+                                    return '类型不能为空';
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'ASTEP',
+                        title: '学校类型',
+                        editable: {
+                            type: 'text',
+                            validate: function (value) {
+                                if ($.trim(value) == '') {
+                                    return '学校类型不能为空';
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'ENGLISHTITLE',
+                        title: '英语标题',
+                        editable: {
+                            type: 'text',
+                            validate: function (value) {
+                                if ($.trim(value) == '') {
+                                    return '英语标题不能为空';
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'USERTYPE',
+                        title: '用户类型',
+                        editable: {
+                            type: 'text',
+                            validate: function (value) {
+                                if ($.trim(value) == '') {
+                                    return '用户类型不能为空';
+                                }
+                            }
+                        }
+                    },
+                    {
+                        field: 'OPERATION',
+                        title: '操作&nbsp;&nbsp;&nbsp;&nbsp;',
+                        formatter: function (value, row, index) {
+                            var i = ' ';
+                            or.push(JSON.stringify(row));
+                            var s = '<a class="save" href="javascript:void(0)" title="Like"><i class="glyphicon glyphicon-ok"></i></a>';
+                            var d = '<a class="remove" href="javascript:void(0)" title="Remove"><i class="glyphicon glyphicon-remove"></i></a>';
+                            return  i + s + '&nbsp&nbsp&nbsp&nbsp' + d;
+
+                        },
+                        events: 'operateEvents'
+                    }],
+                sortName: 'ID',
+                sortOrder: 'asc',
+                pagination: true,
+                uniqueId: "ID",
+                //显示分页方式（客户端和服务器端分页）
+                sidePagination: 'client',
+                pageNumber: 1,
+                pageSize: 10,
+                pageList: [5, 10, 20],
+                toolbar: '#toolbar',
+                //显示是否显示刷新图标
+                showRefresh: 'true',
+                //选择是否切换视图图标出现
+                showToggle: 'true',
+                //选择是否显示出根据field来显示数据
+                showColumns: 'true',
+                //显示是否出现搜索框
+                search: true,
+                clickToSelect: true,
+                showExport: true,
+                exportDataType: $exprotType
+            });
+            //这里设置table-toolbar样式,必须先设置高度，再设置背景颜色
+            $('.fixed-table-toolbar').css("backgroundColor", "#D9EDF6");
+            //清除select选择框的左浮动
+            var $tb = $('#toolbar');
+            var $pl = $('.pull-left');
+            var $prs = $('.pull-right.search');
+            var $ccbp = $('.columns.columns-right.btn-group.pull-right');
+            var $bt = $('.bootstrap-table');
+            $tb.find('select').css("float", "right");
+            $pl.css("margin-top", "20px");
+            $pl.css("margin-bottom", "0px");
+            $prs.css("margin-top", "20px");
+            $prs.css("margin-bottom", "0px");
+            $ccbp.css("margin-top", "20px");
+            $ccbp.css("margin-bottom", "0px");
+            $tb.css("display", 'block');
+            $bt.css("width", "100%");
+            $bt.css("border", "1px #D9EDF6 solid");
+            $bt.css("float", "right");
+            $bt.css("margin-top", "68px");
+            window.operateEvents = {
+                'click .save': function (e, value, row, index) {
+                    //只传入修改相关字段后的json
+                    var oldr = JSON.parse(or[index]);
+                    //删除json格式第一个元素属性"0"
+                    delete row["0"];
+                    //首先前端进行数据校验，而后发送修改后的字段数据到后端校验
+                    var newr = JSON.parse(JSON.stringify(row));
+                    dataValidator('ID>=SCORE,SCORE!=100', 'ID号不能小于得分', newr);
+                    console.log(newr);
+                    var data = {};
+                    data["ID"] = newr["ID"];
+                    for(var key in newr) {
+                        if(newr[key]==oldr[key]){
+                            continue;
+                        }else {
+                            data[key] = newr[key];
+                        }
+                    }
+//                       var ds = new dataset();
+//                       $.ajax({
+//                           type: "post",
+//                           data: row,
+//                           //请求后端保存的url
+//                           url: '/Analyze/EditMeterMeasureHistoryData',
+//                           success: function (data) {
+//                               alert('修改成功');
+//                           }
+//                       });
+                    $("#datagrid").bootstrapTable('updateByUniqueId', {
+                        id: row.ID,
+                        row: row
+                    })
+                },
+                'click .remove': function (e, value, row, index) {
+                    swal({
+                                title: "确认删除?",
+                                text: "删除后您将不能恢复该条记录!",
+                                type: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#DD6B55",
+                                confirmButtonText: "确认, 删除！",
+                                closeOnConfirm: false
+                            },
+                            function(){
+                                //通过ajax传递到后台删除该记录，当返回成功后再在前端删除该记录
+                                $('#datagrid').bootstrapTable('removeByUniqueId', row.ID);
+                                swal("已删除!", "已删除该条记录.", "success");
+                            });
+//                       $.ajax({
+//                           type: "post",
+//                           data: row,
+//                           //请求后端删除的url
+//                           url: '/Analyze/DeleteMeterMeasureHistoryData',
+//                           success: function (data) {
+//                               alert('删除成功');
+//                               $('#querylist').bootstrapTable('remove', {
+//                                   field: 'MeterMeasureHistoryID',
+//                                   values: [row.MeterMeasureHistoryID]
+//                               });
+//                           }
+//                       });
+//                    $('#datagrid').bootstrapTable('removeByUniqueId', row.ID);
+                }
+            }
+        };
+        $('#toolbar').find('select').change(function () {
+            var $datagrid = $('#datagrid');
+            $datagrid.bootstrapTable('destroy');
+            new inialTable($(this).val());
+        });
+    });
+    $(function () {
+        var ep=new ExcelPlus();
+        ep.openLocal({
+            "flashPath":"js/swfobject/",
+            "labelButton":"Open an Excel file"
+        },function() {
+            var a = ep.selectSheet(1).readAll();
+            var jsondata = "[";
+            for (var i=1; i<a.length; i++){
+                jsondata += "{";
+                for (var j=0; j<a[i].length; j++){
+                    if (j == a[i].length-1) {
+                        jsondata += "\""+a[0][j] + "\"" + ":" + "\""+ a[i][j] + "\"";
+                    } else {
+                        jsondata += "\""+a[0][j] + "\"" + ":" + "\""+ a[i][j] + "\"" + ",";
+                    }
+                }
+                if (i == a.length-1){
+                    jsondata += "}"
+                }else {
+                    jsondata += "},"
+                }
+            }
+            jsondata += "]";
+//            console.log(jsondata);
+            //这里先把json格式数据jsondata通过ajax传回到后台，而返回成功信息后再将信息a显示到前台界面
+            //$.ajax()
+            //$("#importSuccessModal").modal('show');
+            swal("成功!", "导入Excel数据成功!", "success")
+            $("#datagrid").bootstrapTable('append', getExcelData());
+            function getExcelData() {
+                var excelDatas = [];
+                for (var i=1; i<a.length; i++) {
+                    var exceldata = {
+                        ID: a[i][0],
+                        TITLE: a[i][1],
+                        MEMO: a[i][2],
+                        SCORE: a[i][3],
+                        PRJ_ID: a[i][4],
+                        TYPENAME: a[i][5],
+                        AUSER: a[i][6],
+                        ASTEP: a[i][7],
+                        ENGLISHTITLE: a[i][8],
+                        USERTYPE: a[i][9]
+                    };
+                    excelDatas.push(exceldata);
+                }
+                return excelDatas;
+            }
+        })
+    });
+    $("#addRecord").click(function () {
+        //首先进行前端数据校验
+        dataValidator('ID>=SCORE', 'ID号不能小于得分');
+        //然后再进行ajax异步提交后台数据库当正确返回success时才做出更新数据表的处理
+        //$.ajax();
+        $("#datagrid").bootstrapTable('append', {
+            ID: 18,
+            TITLE: $('#title').val(),
+            MEMO: $('#memo').val(),
+            SCORE: $('#score').val(),
+            PRJ_ID: $('#pro_id').val(),
+            TYPENAME: $('#typename').val(),
+            AUSER: $('#auser').val(),
+            ASTEP: $('#astep').val(),
+            ENGLISHTITLE: $('#englishtitle').val(),
+            USERTYPE: $('#usertype').val()
+        });
+        $("#myModal").modal('hide');
+    });
+</script>
+<script>
+    $("#btnExpandAll").click(function(){
+        $("#tree").fancytree("getTree").visit(function(node){
+            node.setExpanded(true);
+        });
+    });
+    $("#btnCollapseAll").click(function(){
+        $("#tree").fancytree("getTree").visit(function(node){
+            node.setExpanded(false);
+        });
+    });
+
+    $("#plainTreeStyles").on("change", "input", function(e){
+        $("#tree ul").toggleClass($(this).data("class"), $(this).is(":checked"));
+    });
+
+    $("#addchild").click(function () {
+        var node = $("#tree").fancytree("getActiveNode");
+        if( !node ) {
+            alert("请激活一个父节点.");
+            return;
+        }
+        node.editCreateNode("child", "Node title");
+    });
+
+    $("#addsiblingfolder").click(function () {
+        var node = $("#tree").fancytree("getActiveNode");
+        node.editCreateNode("after", {
+            title: "New folder",
+            folder: true
+        });
+    });
+
+    $("#deletenode").click(function () {
+        var node = $("#tree").fancytree("getActiveNode");
+        node.remove();
+        //通过ajax传到后台删除该节点
+    });
+</script>
+</body>
+</html>
