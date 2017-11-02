@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>treedatagrid</title>
+    <title>treedatagrid2</title>
     <link href="css/bootstrap.css" rel="stylesheet">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/bootstrap-table.css">
@@ -24,13 +24,41 @@
     <script type="text/javascript" src="js/excelplus-2.4.1.min.js"></script>
     <script src="js/esprima.js"></script>
     <script src="js/data-validator.js"></script>
+    <link href="css/ui.fancytree.css" rel="stylesheet" class="skinswitcher">
+    <script src="js/jquery.fancytree.js"></script>
+    <script src="js/jquery.fancytree.dnd.js"></script>
+    <script src="js/jquery.fancytree.edit.js"></script>
+    <script src="js/jquery.fancytree.glyph.js"></script>
+    <script src="js/jquery.fancytree.table.js"></script>
+    <script src="js/jquery.fancytree.wide.js"></script>
+    <script src="js/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="css/sweetalert.css">
 </head>
 <body>
 <div style="width: 100%" id="all" >
-    <div id="tree" style="width: 20%;float: left;font-size:20px" ></div>
-    <div id="handler" style="position: absolute;float: left;height: 500px;width: 1px;cursor: ew-resize;z-index:1;left: 20%;display: none;"></div>
-    <h2>日志管理</h2>
-    <div id="tablediv" style="width: 80%;float:right"><table class="table table-striped" id="datagrid" data-url="../app/data/url.json" data-show-export="true"></table></div>
+    <div id="treediv" style="width: 20%;float: left">
+
+        <p id="plainTreeStyles">
+            <b>Add container class:</b><br>
+            <label><input type="checkbox" data-class="fancytree-colorize-selected"> fancytree-colorize-selected</label>
+        </p>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <b>系统管理</b>
+            </div>
+            <div id="tree" class="panel-body fancytree-colorize-hover fancytree-fade-expander">
+            </div>
+            <div class="panel-footer">
+                <button id="btnExpandAll" class="btn btn-xs btn-primary">全部展开</button>
+                <button id="btnCollapseAll" class="btn btn-xs btn-warning">全部折叠</button>
+                <button id="addchild" class="btn btn-xs btn-info">添加子节点</button>
+                <button id="addsiblingfolder" class="btn btn-xs btn-success">添加文件夹</button>
+                <button id="deletenode" class="btn btn-xs btn-danger">删除子节点</button>
+            </div>
+        </div>
+    </div>
+    <div id="tablediv" style="width: 80%;float:right"><table class="table table-striped" id="datagrid" data-url="../tree-datagrid/data/url.json" data-show-export="true"></table></div>
 </div>
 <div id="toolbar" style="display: none">
     <div class="form-group">
@@ -146,33 +174,6 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="mydeleteModal" tabindex="-1" role="dialog" aria-labelledby="mydeleteModalLabel">
-    <div class="modal-dialog" role="document" style="margin-top: 18%">
-        <div class="modal-content">
-            <div class="modal-header" style="background-color: #FCF8E3">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="mydeleteModalLabel">您确定删除选定的记录吗？</h4>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                <button type="button" id="deleteRecord" class="btn btn-primary">确定</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="modal fade" id="importSuccessModal" tabindex="-1" role="dialog" aria-labelledby="mydeleteModalLabel">
-    <div class="modal-dialog" role="document" style="margin-top: 19%">
-        <div class="modal-content">
-            <div class="modal-header" style="background-color: #DEF0D8">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="importSuccessModalLabel">导入成功！</h4>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="importSuccess" class="btn btn-primary">确定</button>
-            </div>
-        </div>
-    </div>
-</div>
 <script>
     $(function () {
         //如果是移动端访问则固定modal位置，在PC上则可以调整其大小位置
@@ -232,12 +233,104 @@
         }
     });
     $(function () {
-        $("#tree").treeview({data: getTree()});
-        $("#tree").on('nodeSelected', function (event, data) {
-            if(data.text=="日志管理") {
-                new inialTable();
-                $('#handler').css("display", "inline-block");
+        glyph_opts = {
+            map: {
+                doc: "glyphicon glyphicon-file",
+                docOpen: "glyphicon glyphicon-file",
+                checkbox: "glyphicon glyphicon-unchecked",
+                checkboxSelected: "glyphicon glyphicon-check",
+                checkboxUnknown: "glyphicon glyphicon-share",
+                dragHelper: "glyphicon glyphicon-play",
+                dropMarker: "glyphicon glyphicon-arrow-right",
+                error: "glyphicon glyphicon-warning-sign",
+                expanderClosed: "glyphicon glyphicon-menu-right",
+                expanderLazy: "glyphicon glyphicon-menu-right",  // glyphicon-plus-sign
+                expanderOpen: "glyphicon glyphicon-menu-down",  // glyphicon-collapse-down
+                folder: "glyphicon glyphicon-folder-close",
+                folderOpen: "glyphicon glyphicon-folder-open",
+                loading: "glyphicon glyphicon-refresh glyphicon-spin"
             }
+        };
+        $(function() {
+            // 初始化 Fancytree
+            $("#tree").fancytree({
+                extensions: ["dnd", "edit", "glyph", "wide"],
+                checkbox: true,
+                dnd: {
+                    focusOnClick: true,
+                    preventVoidMoves: true, // Prevent dropping nodes 'before self', etc.
+                    preventRecursiveMoves: true, // Prevent dropping nodes on own descendants
+                    dragStart: function (node, data) {
+                        return true;
+                    },
+                    dragEnter: function (node, data) {
+                        return true;
+                    },
+                    dragDrop: function(node, data) {
+                        /** This function MUST be defined to enable dropping of items on
+                         *  the tree.
+                         */
+                        //先通过ajax将新的树结构传到后台,然后再更新树结构
+                        var tree = $("#tree").fancytree("getTree");
+                        var d = tree.toDict(true);
+                        console.log(JSON.stringify(d));
+                        data.otherNode.moveTo(node, data.hitMode);
+                    }
+                },
+                edit: {
+                    triggerStart: ["f2", "dblclick", "shift+click", "mac+enter"],
+                    beforeEdit: function(event, data){
+                        // Return false to prevent edit mode
+                    },
+                    edit: function(event, data){
+                        // Editor was opened (available as data.input)
+                    },
+                    beforeClose: function(event, data){
+                        // Return false to prevent cancel/save (data.input is available)
+                        if( data.originalEvent.type === "mousedown" ) {
+
+                        }
+                    },
+                    save: function(event, data){
+                        // Save data.input.val() or return false to keep editor open
+                        // Simulate to start a slow ajax request...
+                        setTimeout(function(){
+                            $(data.node.span).removeClass("pending");
+                            // Let's pretend the server returned a slightly modified
+                            // title:
+                            data.node.setTitle(data.node.title + "!");
+                        }, 2000);
+                        return true;
+                    },
+                    close: function(event, data){
+                        // Editor was removed
+                        if( data.save ) {
+                            $(data.node.span).addClass("pending");
+                        }
+                    }
+                },
+                glyph: glyph_opts,
+                selectMode: 2,
+                source: {url: "data/tree.json", debugDelay: 500},
+                toggleEffect: {effect: "drop", options: {direction: "left"}, duration: 400},
+                wide: {
+                    iconWidth: "1em",     // Adjust this if @fancy-icon-width != "16px"
+                    iconSpacing: "0.5em", // Adjust this if @fancy-icon-spacing != "3px"
+                    levelOfs: "1.5em"     // Adjust this if ul padding != "16px"
+                },
+
+                icon: function (event, data) {
+
+                },
+                lazyLoad: function (event, data) {
+                    data.result = {url: "ajax-sub2.json", debugDelay: 1000};
+                },
+                focus: function (event, data) {
+                    if (data.node.title=="学生管理") {
+                        new inialTable();
+                    }
+                }
+            });
         });
         var inialTable = function ($exprotType) {
             var or = [];
@@ -360,7 +453,7 @@
                             var i = ' ';
                             or.push(JSON.stringify(row));
                             var s = '<a class="save" href="javascript:void(0)" title="Like"><i class="glyphicon glyphicon-ok"></i></a>';
-                            var d = '<a class="remove" href="javascript:void(0)" title="Remove"><i class="glyphicon glyphicon-remove" data-toggle="modal" data-target="#mydeleteModal"></i></a>';
+                            var d = '<a class="remove" href="javascript:void(0)" title="Remove"><i class="glyphicon glyphicon-remove"></i></a>';
                             return  i + s + '&nbsp&nbsp&nbsp&nbsp' + d;
 
                         },
@@ -443,12 +536,20 @@
                     })
                 },
                 'click .remove': function (e, value, row, index) {
-                    $("#deleteRecord").click(function () {
-                        //先进行ajax异步提交后台数据库正确处理返回结果后才进行前台删除操作
-                        //$.ajax()
-                        $("#mydeleteModal").modal('hide');
-                        $('#datagrid').bootstrapTable('removeByUniqueId', row.ID);
-                    });
+                    swal({
+                                title: "确认删除?",
+                                text: "删除后您将不能恢复该条记录!",
+                                type: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#DD6B55",
+                                confirmButtonText: "确认, 删除！",
+                                closeOnConfirm: false
+                            },
+                            function(){
+                                //通过ajax传递到后台删除该记录，当返回成功后再在前端删除该记录
+                                $('#datagrid').bootstrapTable('removeByUniqueId', row.ID);
+                                swal("已删除!", "已删除该条记录.", "success");
+                            });
 //                       $.ajax({
 //                           type: "post",
 //                           data: row,
@@ -466,119 +567,10 @@
                 }
             }
         };
-        function getTree() {
-            //生成树结构
-            var data = [
-                {
-                    text: "系统管理",
-                    icon: "glyphicon  glyphicon-folder-close",
-                    selectedIcon: "glyphicon glyphicon-folder-open",
-                    color: "#337AB7",
-                    backColor: "#fff",
-                    state: {
-                        checked: true,
-                        expanded: false
-                    },
-                    nodes: [
-                        {
-                            text: "用户管理",
-                            color: "#337AB7",
-                            backColor: "#fff;",
-                            icon: "glyphicon glyphicon-folder-open",
-                            selectedIcon: "glyphicon glyphicon-arrow-right"
-                        },
-                        {
-                            text: "日志管理",
-                            color: "#337AB7",
-                            backColor: "#FFFFFF",
-
-                            icon: "glyphicon glyphicon-folder-open",
-                            selectedIcon: "glyphicon glyphicon-arrow-right"
-                        }
-                    ]
-                },
-                {
-                    text: "仓库管理",
-                    icon: "glyphicon glyphicon-folder-close",
-                    selectedIcon: "glyphicon glyphicon-folder-open",
-                    color: "#337AB7",
-                    backColor: "#FFFFFF",
-                    href: "#node-1",
-                    selectable: true,
-                    state: {
-                        checked: true,
-                        expanded: false
-                    },
-                    tags: ['available'],
-                    nodes: [
-                        {
-                            text: "库存管理",
-                            color: "#337AB7",
-                            backColor: "#FFFFFF",
-                            icon: "glyphicon glyphicon-folder-open",
-                            selectedIcon: "glyphicon glyphicon-arrow-right"
-                        },
-                        {
-                            text: "收获管理",
-                            color: "#337AB7",
-                            backColor: "#FFFFFF",
-                            icon: "glyphicon glyphicon-folder-open",
-                            selectedIcon: "glyphicon glyphicon-arrow-right"
-                        },
-                        {
-                            text: "发货管理",
-                            icon: "glyphicon glyphicon-folder-open",
-                            selectedIcon: "glyphicon glyphicon-folder-open",
-                            color: "#337AB7",
-                            backColor: "#FFFFFF",
-                            nodes: [
-                                {
-                                    text: "用户管理",
-                                    color: "#337AB7",
-                                    backColor: "#FFFFFF",
-                                    icon: "glyphicon glyphicon-folder-open",
-                                    selectedIcon: "glyphicon glyphicon-arrow-right"
-                                },
-                                {
-                                    text: "日志查看",
-                                    color: "#337AB7",
-                                    backColor: "#FFFFFF",
-                                    icon: "glyphicon glyphicon-folder-open",
-                                    selectedIcon: "glyphicon glyphicon-arrow-right"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ];
-            return data;
-        }
         $('#toolbar').find('select').change(function () {
             var $datagrid = $('#datagrid');
             $datagrid.bootstrapTable('destroy');
             new inialTable($(this).val());
-        });
-    });
-    $(function(){
-        var doc = $(document), dl = $("#tree"),da=$("#all").width(),dt=$("#tablediv");
-        var sum = dl.width() + dt.width() +
-                $("#handler").mousedown (function (e) {
-                    var me = $(this);
-                    var deltaX = e.clientX  - (parseFloat(me.css("left")) || parseFloat(me.prop("clientLeft")));
-                    doc.mousemove(function (e){
-                        var lt = e.clientX - deltaX;
-                        lt = lt < 0 ? 0 : lt;
-                        lt = lt > sum - me.width() ? sum - me.width() : lt;
-                        if(0.1<lt/da&&lt/da<0.5){
-                            me.css ("left",(lt)*100/sum+"%");
-                            dl.width((lt)*100/sum+"%");
-                            dt.width((sum-lt-me.width())*100/da+"%");
-                        }else {
-                        }
-                    });
-                }).width();
-        doc.mouseup (function(){
-            doc.unbind("mousemove");
         });
     });
     $(function () {
@@ -608,7 +600,8 @@
 //            console.log(jsondata);
             //这里先把json格式数据jsondata通过ajax传回到后台，而返回成功信息后再将信息a显示到前台界面
             //$.ajax()
-            $("#importSuccessModal").modal('show');
+            //$("#importSuccessModal").modal('show');
+            swal("成功!", "导入Excel数据成功!", "success")
             $("#datagrid").bootstrapTable('append', getExcelData());
             function getExcelData() {
                 var excelDatas = [];
@@ -634,8 +627,6 @@
     $("#addRecord").click(function () {
         //首先进行前端数据校验
         dataValidator('ID>=SCORE', 'ID号不能小于得分');
-
-
         //然后再进行ajax异步提交后台数据库当正确返回success时才做出更新数据表的处理
         //$.ajax();
         $("#datagrid").bootstrapTable('append', {
@@ -652,8 +643,44 @@
         });
         $("#myModal").modal('hide');
     });
-    $("#importSuccess").click(function () {
-       $("#importSuccessModal").modal('hide');
+</script>
+<script>
+    $("#btnExpandAll").click(function(){
+        $("#tree").fancytree("getTree").visit(function(node){
+            node.setExpanded(true);
+        });
+    });
+    $("#btnCollapseAll").click(function(){
+        $("#tree").fancytree("getTree").visit(function(node){
+            node.setExpanded(false);
+        });
+    });
+
+    $("#plainTreeStyles").on("change", "input", function(e){
+        $("#tree ul").toggleClass($(this).data("class"), $(this).is(":checked"));
+    });
+
+    $("#addchild").click(function () {
+        var node = $("#tree").fancytree("getActiveNode");
+        if( !node ) {
+            alert("请激活一个父节点.");
+            return;
+        }
+        node.editCreateNode("child", "Node title");
+    });
+
+    $("#addsiblingfolder").click(function () {
+        var node = $("#tree").fancytree("getActiveNode");
+        node.editCreateNode("after", {
+            title: "New folder",
+            folder: true
+        });
+    });
+
+    $("#deletenode").click(function () {
+        var node = $("#tree").fancytree("getActiveNode");
+        node.remove();
+        //通过ajax传到后台删除该节点
     });
 </script>
 </body>
